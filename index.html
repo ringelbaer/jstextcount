@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textstatistiken</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #fff;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            max-width:1280px;
+            margin: 0 auto 20px;
+        }
+        .stat-box {
+            flex: 1;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .stat-box:last-child {
+            margin-right: 0;
+        }
+        .stat-box h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+        .stat-box p {
+            font-size: 40px;
+            margin: 10px 0 0;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            max-width:1280px;
+            background-color: #fff;
+            margin: 0 auto;
+            display:block;
+            height: 350px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        button {
+        	padding:10px;
+        	width:100%;
+        	text-align:center;
+        	border: 1px solid #e41838;
+        	cursor:pointer;
+        	margin-bottom:1em;
+        	font-size:1.3em;        
+        	text-transform: uppercase;
+        	font-weight:600;	
+        	background-color:#ee5b72;
+        	color:white;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            max-width: 200px;
+            height: auto;
+        }
+        table {
+            width: 100%;
+            max-width:1280px;
+            border-collapse: collapse;
+            margin: 0 auto;
+            background-color: #fff;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .flex {
+            display:flex;
+            gap:20px;
+        }
+        .s1 {
+            flex-basis:70%;
+        }
+        .s2 {
+            flex-basis:30%;
+        }
+        #zeilenweise {
+            margin-bottom:1em;
+            display:block;
+        }
+        .privacy {
+            font-size:0.7em;
+            color:#bbb;
+            text-align:center;
+            margin: 1em;
+        }
+        
+        @media screen and (max-width:800px) {
+            .flex {
+                flex-wrap:wrap;
+            }            
+            
+            .s1 {
+                flex-basis:100%;
+            }
+            .s2 {
+                flex-basis:100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo">
+        <img src="logo.png" alt="Logo">
+    </div>
+
+    <div class="flex">
+        <div class="s1">
+            <div class="container">
+                <div class="stat-box">
+                    <h2>Zeichen (mit Leerzeichen)</h2>
+                    <p id="charCountWithSpaces">0</p>
+                </div>
+                <div class="stat-box">
+                    <h2>Zeichen (ohne Leerzeichen)</h2>
+                    <p id="charCountWithoutSpaces">0</p>
+                </div>
+                <div class="stat-box">
+                    <h2>Wortanzahl</h2>
+                    <p id="wordCount">0</p>
+                </div>
+            </div>
+
+            <textarea id="textInput" oninput="calculateStats()"></textarea>
+        </div>
+        
+        <div class="s2">
+            <button id="pasteButton">Paste & Count</button>
+            
+            <!-- Checkbox für Zeilenweise zählen -->
+            <label id="zeilenweise">
+                <input type="checkbox" id="lineCountCheckbox">
+                Zeilenweise zählen
+            </label>
+
+            <table id="wordFrequencyTable">
+                <thead>
+                    <tr>
+                        <th id="firstColumnHeader">Wort</th>
+                        <th id="secondColumnHeader">Häufigkeit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Die Wort- oder Zeilenstatistik wird hier eingefügt -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // Funktion zum Einfügen des Clipboard-Inhalts in die Textarea
+        async function pasteClipboardContent() {
+            const textarea = document.getElementById('textInput');
+            
+            // Textarea leeren
+            textarea.value = '';
+
+            try {
+                // Inhalt der Zwischenablage holen
+                const text = await navigator.clipboard.readText();
+                
+                // Inhalt in die Textarea einfügen
+                textarea.value = text;
+                calculateStats();
+            } catch (err) {
+                console.error('Fehler beim Einfügen aus der Zwischenablage: ', err);
+            }
+        }
+
+        // Event-Listener für den Button
+        document.getElementById('pasteButton').addEventListener('click', pasteClipboardContent);
+        
+        // Event-Listener für die Checkbox-Änderung
+        document.getElementById('lineCountCheckbox').addEventListener('change', calculateStats);
+
+
+        // Funktion zum Berechnen der Statistiken
+        function calculateStats() {
+            const text = document.getElementById('textInput').value;
+
+            // Zeichen mit Leerzeichen
+            const charCountWithSpaces = text.length;
+
+            // Zeichen ohne Leerzeichen
+            const charCountWithoutSpaces = text.replace(/\s+/g, '').length;
+
+            // Wortanzahl
+            const wordCount = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+
+            // Ausgabe der Statistiken
+            document.getElementById('charCountWithSpaces').textContent = charCountWithSpaces;
+            document.getElementById('charCountWithoutSpaces').textContent = charCountWithoutSpaces;
+            document.getElementById('wordCount').textContent = wordCount;
+
+            // Prüfen, ob die Checkbox aktiviert ist
+            if (document.getElementById('lineCountCheckbox').checked) {
+                updateLineCountTable(text);
+            } else {
+                updateWordFrequencyTable(text);
+            }
+        }
+
+        // Funktion zur Aktualisierung der Worthäufigkeitstabelle
+        function updateWordFrequencyTable(text) {
+            // Nur Wörter aus Buchstaben berücksichtigen und in Kleinbuchstaben umwandeln
+            const wordArray = text.trim().toLowerCase().match(/\b[a-zäöüß]+\b/g) || [];
+            const wordFrequency = {};
+
+            // Worthäufigkeit zählen
+            wordArray.forEach(word => {
+                wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+            });
+
+            // Wortfrequenz in ein Array umwandeln und nach Häufigkeit sortieren
+            const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
+
+            // Tabelle leeren
+            const tbody = document.getElementById('wordFrequencyTable').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            // Spaltenüberschriften anpassen
+            document.getElementById('firstColumnHeader').textContent = "Wort";
+            document.getElementById('secondColumnHeader').textContent = "Häufigkeit";
+
+            // Sortierte Daten in die Tabelle einfügen
+            sortedWords.forEach(([word, freq]) => {
+                const row = document.createElement('tr');
+                const wordCell = document.createElement('td');
+                const freqCell = document.createElement('td');
+
+                wordCell.textContent = word;
+                freqCell.textContent = freq;
+
+                row.appendChild(wordCell);
+                row.appendChild(freqCell);
+                tbody.appendChild(row);
+            });
+        }
+
+        // Funktion zur Aktualisierung der Zeilenanzahltabelle
+        function updateLineCountTable(text) {
+            // Text in einzelne Zeilen aufteilen
+            const lines = text.split(/\n/);
+
+            // Tabelle leeren
+            const tbody = document.getElementById('wordFrequencyTable').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            // Spaltenüberschriften anpassen
+            document.getElementById('firstColumnHeader').textContent = "Zeilentext";
+            document.getElementById('secondColumnHeader').textContent = "Zeichenanzahl (mit Leerzeichen)";
+
+            // Zeilenweise durch den Text iterieren
+            lines.forEach(line => {
+                const row = document.createElement('tr');
+                const textCell = document.createElement('td');
+                const charCountCell = document.createElement('td');
+
+                // Zeichenanzahl mit Leerzeichen
+                const charCountWithSpaces = line.length;
+                if(charCountWithSpaces > 0) {
+                    textCell.textContent = line;
+                    charCountCell.textContent = charCountWithSpaces;
+    
+                    row.appendChild(textCell);
+                    row.appendChild(charCountCell);
+                    tbody.appendChild(row);
+                }
+            });
+        }
+    </script>
+
+<div class="privacy">Die Auswertung findet vollständig in Ihrem Browser statt. Es werden keine Informationen an den Server übermittelt.</div>
+</body>
+</html>
